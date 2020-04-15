@@ -82,8 +82,10 @@ export class UnicastMessage extends VObject {
         this.id = nextMessageId;
         nextMessageId += 1;
         if (dst) {
+            this.isDropped = false;
             this.dstPos = dst.position
         } else {
+            this.isDropped = true;
             this.dstPos = new PIXI.Point(src.position.x, src.position.y + 200)
         }
         this.mvInfo = mvInfo;
@@ -103,7 +105,7 @@ export class UnicastMessage extends VObject {
     }
 
     getColor() {
-        return 0xff8f00
+        return this.isDropped ? 0xff0000 : 0xff8f00
     }
 
     update(dt) {
