@@ -111,6 +111,14 @@ class OTNS(object):
 
         self._do_command(f'speed {speed}')
 
+    def visualization(self, broadcast_messages=None):
+        cmd = 'v'
+        if broadcast_messages is not None:
+            cmd += ' bm '
+            cmd += 'on' if broadcast_messages else 'off'
+
+        self._do_command(cmd)
+
     def _detect_otns_path(self) -> str:
         env_otns_path = os.getenv('OTNS')
         if env_otns_path:

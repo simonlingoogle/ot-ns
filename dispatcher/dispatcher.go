@@ -123,6 +123,8 @@ type Dispatcher struct {
 	}
 	watchingNodes map[NodeId]struct{}
 	stopped       bool
+	// visualization options
+	vBroadcastMessages bool
 }
 
 func NewDispatcher(ctx *progctx.ProgCtx, cfg *Config, cbHandler CallbackHandler) *Dispatcher {
@@ -807,6 +809,10 @@ func (d *Dispatcher) setNodeRloc16(srcid NodeId, rloc16 uint16) {
 }
 
 func (d *Dispatcher) visSend(srcid NodeId, dstid NodeId, pktframe *wpan.MacFrame) {
+	if dstid == BroadcastNodeId && !d.vBroadcastMessages {
+		return
+	}
+
 	d.vis.Send(srcid, dstid, &visualize.MsgVisualizeInfo{
 		Channel:         pktframe.Channel,
 		FrameControl:    pktframe.FrameControl,
@@ -992,4 +998,8 @@ func (d *Dispatcher) onStatusPushExtAddr(node *Node, oldExtAddr uint64) {
 	delete(d.extaddrMap, oldExtAddr)
 	d.extaddrMap[node.ExtAddr] = node
 	d.vis.OnExtAddrChange(node.Id, node.ExtAddr)
+}
+
+func (d *Dispatcher) VBroadcastMessages(on bool) {
+	d.vBroadcastMessages = on
 }

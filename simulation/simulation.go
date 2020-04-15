@@ -240,3 +240,7 @@ func (s *Simulation) removeTmpDir() error {
 	// tmp directory is used by nodes for saving *.flash files. Need to be removed when simulation started
 	return os.RemoveAll("tmp")
 }
+
+func (s *Simulation) VBroadcastMessages(on bool) {
+	s.d.VBroadcastMessages(on)
+}

@@ -131,6 +131,8 @@ func (rt *CmdRunner) Execute(cmd *Command) (cc *CommandContext) {
 		rt.executeExit(cc, cmd.Exit)
 	} else if cmd.Web != nil {
 		rt.executeWeb(cc, cc.Web)
+	} else if cmd.V != nil {
+		rt.executeVisualization(cc, cc.V)
 	} else {
 		panic("not implemented")
 	}
@@ -570,6 +572,18 @@ func (rt *CmdRunner) executeScan(cc *CommandContext, cmd *ScanCmd) {
 				return
 			}
 			node.AssurePrompt()
+		})
+	}
+}
+
+func (rt *CmdRunner) executeVisualization(cc *CommandContext, cmd *VCmd) {
+	if cmd.BroadcastMessages != nil {
+		rt.postAsyncWait(func(sim *simulation.Simulation) {
+			if cmd.BroadcastMessages.On != nil {
+				sim.VBroadcastMessages(true)
+			} else {
+				sim.VBroadcastMessages(false)
+			}
 		})
 	}
 }

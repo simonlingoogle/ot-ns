@@ -53,6 +53,7 @@ type Command struct {
 	Radio      *RadioCmd      `| @@` //nolint
 	Scan       *ScanCmd       `| @@` //nolint
 	Speed      *SpeedCmd      `| @@` //nolint
+	V          *VCmd          `| @@` //nolint
 	Web        *WebCmd        `| @@` //nolint
 }
 
@@ -183,6 +184,18 @@ type SpeedCmd struct {
 	Cmd   struct{}      `"speed"`               //nolint
 	Max   *MaxSpeedFlag `( @@`                  //nolint
 	Speed *float64      `| [ (@Int|@Float) ] )` //nolint
+}
+
+type VCmd struct {
+	Cmd               struct{}            `"v"`      //nolint
+	BroadcastMessages *VBroadcastMessages `( @@ ) *` //nolint
+}
+
+// bm on/off
+type VBroadcastMessages struct {
+	Dummy struct{} ` "bm" ` //nolint
+	On    *OnFlag  `( @@`   //nolint
+	Off   *OffFlag `| @@ )` //nolint
 }
 
 //noinspection GoStructTag
