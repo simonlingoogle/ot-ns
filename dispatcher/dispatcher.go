@@ -160,6 +160,8 @@ func NewDispatcher(ctx *progctx.ProgCtx, cfg *Config, cbHandler CallbackHandler)
 		taskChan:           make(chan func(), 100),
 		watchingNodes:      map[NodeId]struct{}{},
 		goDurationChan:     make(chan goDuration, 10),
+		// default visualization options
+		vBroadcastMessages: true,
 	}
 	d.speed = d.normalizeSpeed(d.speed)
 	d.pcap, err = pcap.NewFile("current.pcap")
