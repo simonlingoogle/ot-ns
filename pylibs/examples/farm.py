@@ -37,7 +37,7 @@ ns.visualization(broadcast_messages=False)
 
 R = 7
 RECEIVER_RADIO_RANGE = 300 * R
-SENSOR_RADIO_RANGE = 100 * R
+SENSOR_RADIO_RANGE = 80 * R
 SENSOR_NUM = 10
 FARM_RECT = [10 * R, 10 * R, 210 * R, 110 * R]
 
@@ -52,8 +52,8 @@ sensor_pos = {}
 sensor_move_dir = {}
 
 for i in range(SENSOR_NUM):
-    rx = random.randint(FARM_RECT[0], FARM_RECT[2])
-    ry = random.randint(FARM_RECT[1], FARM_RECT[3])
+    rx = random.randint(FARM_RECT[0] + 20, FARM_RECT[2] - 20)
+    ry = random.randint(FARM_RECT[1] + 20, FARM_RECT[3] - 20)
     sid = ns.add("sed", rx, ry, radio_range=SENSOR_RADIO_RANGE)
     sensor_pos[sid] = (rx, ry)
     sensor_move_dir[sid] = random.uniform(0, math.pi * 2)
