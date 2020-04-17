@@ -26,11 +26,7 @@
 
 name: Build
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   cancel-previous-runs:
@@ -54,4 +50,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build
         run: |
+          ./script/install-deps
           ./script/install
