@@ -20,6 +20,7 @@ current.pcap
 *.rep
 openthread/
 ot-cli-ftd
+*.pyc
 __pycache__
 node_modules/
 
