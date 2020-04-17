@@ -28,7 +28,7 @@
 import setuptools
 
 setuptools.setup(
-    name="pyOTNS",  # Replace with your own username
+    name="otns",
     version="0.0.0",
     author="OpenThread Authors",
     description="Run OpenThread simulation using OTNS",
