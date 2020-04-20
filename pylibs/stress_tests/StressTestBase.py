@@ -24,60 +24,22 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-import random
+
+import logging
 import unittest
 
-from StressTestBase import StressTestBase
-
-XGAP = 70
-YGAP = 70
-RADIO_RANGE = int(XGAP * 1.5)
-
-PING_INTERVAL = 10
-PING_COUNT = 1
+from otns.cli import OTNS
 
 
-class BasicTests(StressTestBase):
+class StressTestBase(unittest.TestCase):
 
-    def test(self):
-        ns = self.ns
-        ns.web()
+    @classmethod
+    def setUpClass(cls) -> None:
+        logging.basicConfig(level=logging.DEBUG)
 
-        while True:
-            # wait until next time
-            self.test_nxn(ns, 8)
+    def setUp(self) -> None:
+        self.ns = OTNS()
+        self.ns.speed = OTNS.MAX_SIMULATE_SPEED
 
-    def test_nxn(self, ns, n):
-        nodes = ns.nodes()
-        for id in nodes:
-            ns.delete(id)
-
-        nodeids = []
-        ns.countdown(n * n, f"Testing {n}x{n} nodes ... %v seconds left")
-        for r in range(n):
-            for c in range(n):
-                nodeid = ns.add("router", 50 + XGAP * c, 50 + YGAP * r, radio_range=RADIO_RANGE)
-                nodeids.append(nodeid)
-
-        secs = 0
-        while secs < 1800:
-            ns.go(PING_INTERVAL)
-            secs += PING_INTERVAL
-            self.produce_traffic(ns, nodeids)
-
-    def produce_traffic(self, ns, nodeids):
-        for p in ns.pings():
-            print('ping', p)
-
-        for i in range(PING_COUNT):
-            n1 = random.choice(nodeids)
-            while True:
-                n2 = random.choice(nodeids)
-                if n2 != n1:
-                    break
-
-            ns.ping(n1, n2, 'mleid', datasize=80)
-
-
-if __name__ == '__main__':
-    unittest.main()
+    def tearDown(self) -> None:
+        self.ns.close()
