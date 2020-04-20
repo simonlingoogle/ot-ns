@@ -71,8 +71,7 @@ class OTNS(object):
         """
         Continue the simulation for a period of time.
 
-        :param duration: the time duration (in simulating time) for the simulation to continue.
-        Continue forever if duration is not specified.
+        :param duration: the time duration (in simulating time) for the simulation to continue. Continue forever if duration is not specified.
         :param speed: simulating speed. Use current simulating speed if not specified.
         """
         if duration is None:
@@ -152,6 +151,7 @@ class OTNS(object):
     def add(self, type: str, x: float = None, y: float = None, id=None, radio_range=None) -> int:
         """
         Add a new node to the simulation.
+
         :param type: node type
         :param x: node position X
         :param y: node position Y
@@ -176,6 +176,7 @@ class OTNS(object):
     def delete(self, *nodeids: int):
         """
         Delete nodes from simulation by IDs.
+
         :param nodeids: node IDs
         """
         cmd = f'del {" ".join(map(str, nodeids))}'
@@ -184,6 +185,7 @@ class OTNS(object):
     def move(self, nodeid: int, x: int, y: int):
         """
         Move node to the target position.
+
         :param nodeid: target node ID
         :param x: target position X
         :param y: target position Y
@@ -194,6 +196,7 @@ class OTNS(object):
     def ping(self, srcid: int, dst: Union[int, str], addrtype='any', datasize=0):
         """
         Ping from source node to destination node.
+
         :param srcid: source node ID
         :param dst: destination node ID or address
         :param addrtype: address type for the destination node (only useful for destination node ID)
@@ -218,6 +221,7 @@ class OTNS(object):
     def countdown(self, secs: int, text: str):
         """
         Show countdown
+
         :param secs: countdown seconds
         :param text: countdown text
 
@@ -231,6 +235,7 @@ class OTNS(object):
         """
         Get the message drop rate of 128 byte packet.
         Smaller packet has lower drop rate.
+
         :return: message drop rate (0 ~ 1.0)
         """
         return self._expect_float(self._do_command('plr'))
@@ -240,6 +245,7 @@ class OTNS(object):
         """
         Set the message drop rate of 128 byte packet.
         Smaller packet has lower drop rate.
+
         :param value: message drop ratio (0 ~ 1.0)
         """
         self._do_command(f'plr {value}')
@@ -294,25 +300,25 @@ class OTNS(object):
     def radio_on(self, *nodeids: int):
         """
         Turn on node radio.
+
         :param nodeids: operating node IDs
-        :return:
         """
         self._do_command(f'radio {" ".join(map(str, nodeids))} on')
 
     def radio_off(self, *nodeids: int):
         """
         Turn off node radio.
+
         :param nodeids: operating node IDs
-        :return:
         """
         self._do_command(f'radio {" ".join(map(str, nodeids))} off')
 
     def radio_set_fail_time(self, *nodeids: int, fail_time: Optional[Tuple[int, int]]):
         """
         Set node radio fail time parameters.
+
         :param nodeids: node IDs
         :param fail_time: fail time (fail_duration, fail_interval) or None for always on.
-        :return:
         """
         fail_duration, period_time = fail_time
         cmd = f'radio {" ".join(map(str, nodeids))} ft {fail_duration} {period_time}'
@@ -422,6 +428,7 @@ class OTNS(object):
 
         :param nodeid: node ID
         :param addrtype: address type (e.x. mleid, rloc, linklocal), or None for all addresses
+
         :return: list of filtered addresses
         """
         cmd = "ipaddr"
@@ -433,9 +440,9 @@ class OTNS(object):
     def set_network_name(self, nodeid: int, name: str = None):
         """
         Set network name.
+
         :param nodeid: node ID
         :param name: network name to set
-        :return:
         """
         name = self._escape_whitespace(name)
         self.node_cmd(nodeid, f'networkname {name}')
@@ -463,6 +470,7 @@ class OTNS(object):
         Get node pan ID.
 
         :param nodeid: node ID
+
         :return: pan ID
         """
 
@@ -471,7 +479,6 @@ class OTNS(object):
         Get masterkey.
 
         :param nodeid: target node ID
-        :return:
         """
         return self._expect_str(self.node_cmd(nodeid, 'masterkey'))
 
