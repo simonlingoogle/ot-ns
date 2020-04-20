@@ -29,19 +29,19 @@ import time
 
 from otns.cli import OTNS
 
-XGAP = 100
-YGAP = 100
-RADIO_RANGE = 150
+XGAP = 70
+YGAP = 70
+RADIO_RANGE = int(XGAP*1.5)
 
 
 def main():
-    ns = OTNS()
+    ns = OTNS(otns_args=['-log', 'debug'])
     ns.web()
     ns.speed = float('inf')
 
     while True:
         # wait until next time
-        for n in (2, 3, 4, 5, 6, 7, 8):
+        for n in (8,):
             test_nxn(ns, n)
             time.sleep(1)
 
@@ -54,18 +54,19 @@ def test_nxn(ns, n):
     ns.countdown(n * n, f"Testing {n}x{n} nodes ... %v seconds left")
     for r in range(n):
         for c in range(n):
-            ns.add("router", 100 + XGAP * c, 100 + YGAP * r, radio_range=RADIO_RANGE)
+            ns.add("router", 50 + XGAP * c, 50 + YGAP * r, radio_range=RADIO_RANGE)
 
     secs = 0
     while True:
-        ns.go(1)
-        secs += 1
+        ns.go(100)
+        secs += 100
 
         partitions = ns.partitions()
         if len(partitions) == 1 and 0 not in partitions:
             # all nodes converged into one partition
             break
 
+    ns.go(600)
 
 if __name__ == '__main__':
     main()
