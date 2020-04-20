@@ -171,6 +171,19 @@ func (s *Simulation) OnNodeRecover(nodeid NodeId) {
 	simplelogger.AssertNotNil(node)
 }
 
+func (s *Simulation) OnNodeProcessHalt(nodeid NodeId) {
+	node := s.nodes[nodeid]
+	if node == nil {
+		return
+	}
+
+	defer func() {
+		recover()
+	}()
+
+	node.expectEOF(time.Millisecond * 100)
+}
+
 func (s *Simulation) PostAsync(trivial bool, f func()) {
 	s.d.PostAsync(trivial, f)
 }

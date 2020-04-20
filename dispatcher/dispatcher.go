@@ -76,6 +76,7 @@ func DefaultConfig() *Config {
 type CallbackHandler interface {
 	OnNodeFail(nodeid NodeId)
 	OnNodeRecover(nodeid NodeId)
+	OnNodeProcessHalt(nodeid NodeId)
 }
 
 type goDuration struct {
@@ -329,6 +330,10 @@ loop:
 				d.handleRecvEvent(evt)
 			case <-blockTimeout:
 				// timeout
+				for nodeid := range d.aliveNodes {
+					d.cbHandler.OnNodeProcessHalt(nodeid)
+				}
+
 				break loop
 			}
 		} else {
