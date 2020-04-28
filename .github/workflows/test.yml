@@ -73,3 +73,5 @@ jobs:
       - name: Test
         run: |
           ./script/test py-unittests
+      - run: |
+          bash <(curl -s https://codecov.io/bash)
