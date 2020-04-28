@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (c) 2020, The OTNS Authors.
 # All rights reserved.
 #
@@ -24,27 +25,19 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-name: Lint
+import setuptools
 
-on: [push, pull_request]
-
-jobs:
-  cancel-previous-runs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: rokroskar/workflow-run-cleanup-action@master
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        if: "github.ref != 'refs/heads/master'"
-
-  go-lint:
-    name: Go Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-go@v1
-        with:
-          go-version: '1.13' # The Go version to download (if necessary) and use.
-      - uses: actions/checkout@v2
-      - name: Check pretty
-        run: |
-          ./script/check-pretty
+setuptools.setup(
+    name="otns",
+    version="0.0.0",
+    author="OpenThread Authors",
+    description="Run OpenThread simulation using OTNS",
+    url="https://github.com/openthread/ot-ns",
+    packages=setuptools.find_packages(),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: BSD 3-Clause License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires='>=3.6',
+)
