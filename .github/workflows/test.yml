@@ -26,6 +26,9 @@
 
 name: Test
 
+env:
+  CODECOV_TOKEN: "0bdbf6f5-fb2f-415d-a7f4-4be6cb12aa4f"
+
 on:
   push:
     branches: [ master ]
@@ -52,6 +55,8 @@ jobs:
       - name: Test
         run: |
           ./script/test go-tests
+      - run: |
+          bash <(curl -s https://codecov.io/bash)
 
   py-unittests:
     name: Python Unittests
