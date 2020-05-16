@@ -246,7 +246,6 @@ loop:
 			break loop
 		}
 	}
-
 }
 
 func (d *Dispatcher) goUntilPauseTime() {
@@ -340,7 +339,6 @@ loop:
 				break loop
 			}
 		}
-
 	}
 
 	return count
