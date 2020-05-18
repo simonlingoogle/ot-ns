@@ -101,13 +101,15 @@ This will open up a text editor where you can specify which commits to squash.
 
 #### Coding conventions and style
 
+You can run `./script/make-pretty` and `./script/check-pretty` to automatically reformat code and check for code-style compliance, respectively.
+
+##### Go
 OTNS requires all Go code be formatted with the [gofmt](https://golang.org/cmd/gofmt/) program. 
 Refer to [go fmt your code](https://blog.golang.org/go-fmt-your-code) for further guidance. 
-
 All style and coding suggestions in [Effective Go](https://golang.org/doc/effective_go.html) should be followed, subject to the above rules.
-
 OTNS uses [golangci-lint](https://golangci.com/) in Travis tests. 
-You can run `./script/make-pretty` and `./script/check-pretty` to automatically reformat code and check for code-style compliance, respectively.
+
+##### Python
 
 #### Push and test
 
