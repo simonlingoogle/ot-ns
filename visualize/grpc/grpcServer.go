@@ -93,6 +93,10 @@ exit:
 	return err
 }
 
+func (gs *grpcServer) Sniff(request *pb.SniffRequest, server pb.VisualizeGrpcService_SniffServer) error {
+	panic("implement me")
+}
+
 func (gs *grpcServer) CtrlAddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Empty, error) {
 	err := gs.vis.simctrl.CtrlAddNode(int(req.X), int(req.Y), req.IsRouter, types.NodeMode{
 		RxOnWhenIdle:       req.Mode.RxOnWhenIdle,
