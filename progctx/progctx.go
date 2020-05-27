@@ -28,6 +28,7 @@ package progctx
 
 import (
 	"context"
+	"runtime/debug"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -55,7 +56,9 @@ func (ctx *ProgCtx) WaitCount() int {
 	return total
 }
 
-func (ctx *ProgCtx) Cancel(err interface{}) {
+func (ctx *ProgCtx) Cancel(err error) {
+	debug.PrintStack()
+
 	if ctx.Err() != nil {
 		return
 	}
@@ -66,10 +69,10 @@ func (ctx *ProgCtx) Cancel(err interface{}) {
 
 	ctx.cancel()
 
-	if e, ok := err.(error); ok {
-		simplelogger.TraceError("program exit: %v", e)
+	if err != nil {
+		simplelogger.TraceError("program exiting: %v", err)
 	} else {
-		simplelogger.Infof("program exit: %v", err)
+		simplelogger.Infof("program exiting")
 	}
 
 	for _, f := range ctx.deferred {

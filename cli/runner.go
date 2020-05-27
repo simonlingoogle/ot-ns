@@ -64,13 +64,16 @@ func enterNodeContext(nodeid NodeId) bool {
 	return true
 }
 
-func Run(cr *CmdRunner) error {
+func Run(cr *CmdRunner, stdin *os.File) error {
 	ctx := cr.ctx
+	if stdin == nil {
+		stdin = os.Stdin
+	}
 
 	ctx.WaitAdd("cli", 1)
 	defer ctx.WaitDone("cli")
 
-	stdinFd := int(os.Stdin.Fd())
+	stdinFd := int(stdin.Fd())
 	stdinIsTerminal := readline.IsTerminal(stdinFd)
 	if stdinIsTerminal {
 		stdinState, err := readline.GetState(stdinFd)
@@ -100,6 +103,7 @@ func Run(cr *CmdRunner) error {
 		HistoryFile:     "/tmp/otns-cmds.tmp",
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
+		Stdin:           stdin,
 
 		HistorySearchFold: true,
 		FuncFilterInputRune: func(r rune) (rune, bool) {

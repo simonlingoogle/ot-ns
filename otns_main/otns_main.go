@@ -85,7 +85,7 @@ func parseArgs() {
 	flag.Args()
 }
 
-func Main(visualizerCreator func(ctx *progctx.ProgCtx, args *MainArgs) visualize.Visualizer) {
+func Main(visualizerCreator func(ctx *progctx.ProgCtx, args *MainArgs) visualize.Visualizer, runCli bool, cliInput *os.File) {
 	parseArgs()
 
 	simplelogger.SetLevel(simplelogger.ParseLevel(args.LogLevel))
@@ -116,11 +116,14 @@ func Main(visualizerCreator func(ctx *progctx.ProgCtx, args *MainArgs) visualize
 	sim := createSimulation(ctx)
 	sim.SetVisualizer(vis)
 	go sim.Run()
-	rt := cli.NewCmdRunner(ctx, sim)
-	go func() {
-		err := cli.Run(rt)
-		ctx.Cancel(errors.Wrapf(err, "console exit"))
-	}()
+
+	if runCli {
+		rt := cli.NewCmdRunner(ctx, sim)
+		go func() {
+			err := cli.Run(rt, cliInput)
+			ctx.Cancel(errors.Wrapf(err, "console exit"))
+		}()
+	}
 
 	go func() {
 		err := webSite.Serve()

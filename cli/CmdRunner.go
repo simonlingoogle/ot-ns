@@ -257,7 +257,7 @@ func (rt *CmdRunner) executeExit(cc *CommandContext, cmd *ExitCmd) {
 	rt.postAsyncWait(func(sim *simulation.Simulation) {
 		sim.Stop()
 	})
-	rt.ctx.Cancel("exit")
+	rt.ctx.Cancel(nil)
 }
 
 func (rt *CmdRunner) executePing(cc *CommandContext, cmd *PingCmd) {

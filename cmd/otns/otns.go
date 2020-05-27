@@ -35,5 +35,5 @@ import (
 func main() {
 	otns_main.Main(func(ctx *progctx.ProgCtx, args *otns_main.MainArgs) visualize.Visualizer {
 		return nil
-	})
+	}, nil)
 }
