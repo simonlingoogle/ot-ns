@@ -38,9 +38,9 @@ import (
 	"github.com/openthread/ot-ns/dissectpkt"
 	"github.com/openthread/ot-ns/dissectpkt/wpan"
 	"github.com/openthread/ot-ns/pcap"
+	"github.com/openthread/ot-ns/simplelogger"
 	"github.com/openthread/ot-ns/threadconst"
 	"github.com/openthread/ot-ns/visualize"
-	"github.com/simonlingoogle/go-simplelogger"
 
 	"math"
 	"net"

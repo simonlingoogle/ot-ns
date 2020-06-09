@@ -29,8 +29,8 @@ package dispatcher
 import (
 	"container/heap"
 
+	"github.com/openthread/ot-ns/simplelogger"
 	. "github.com/openthread/ot-ns/types"
-	"github.com/simonlingoogle/go-simplelogger"
 )
 
 type alarmEvent struct {

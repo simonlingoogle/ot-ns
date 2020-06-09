@@ -27,10 +27,10 @@
 package simulation
 
 import (
+	"github.com/openthread/ot-ns/simplelogger"
 	. "github.com/openthread/ot-ns/types"
 	"github.com/openthread/ot-ns/visualize"
 	"github.com/pkg/errors"
-	"github.com/simonlingoogle/go-simplelogger"
 )
 
 type simulationController struct {

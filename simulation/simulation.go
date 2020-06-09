@@ -34,10 +34,10 @@ import (
 	"github.com/openthread/ot-ns/progctx"
 
 	"github.com/openthread/ot-ns/dispatcher"
+	"github.com/openthread/ot-ns/simplelogger"
 	. "github.com/openthread/ot-ns/types"
 	"github.com/openthread/ot-ns/visualize"
 	"github.com/pkg/errors"
-	"github.com/simonlingoogle/go-simplelogger"
 )
 
 type Simulation struct {

@@ -33,8 +33,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/openthread/ot-ns/simplelogger"
 	. "github.com/openthread/ot-ns/types"
-	"github.com/simonlingoogle/go-simplelogger"
 
 	"github.com/chzyer/readline"
 )

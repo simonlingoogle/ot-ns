@@ -32,7 +32,7 @@ import (
 
 	"github.com/openthread/ot-ns/progctx"
 
-	"github.com/simonlingoogle/go-simplelogger"
+	"github.com/openthread/ot-ns/simplelogger"
 )
 
 var (

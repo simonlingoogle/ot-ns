@@ -41,8 +41,8 @@ import (
 	"time"
 
 	"github.com/openthread/ot-ns/otoutfilter"
+	"github.com/openthread/ot-ns/simplelogger"
 	. "github.com/openthread/ot-ns/types"
-	"github.com/simonlingoogle/go-simplelogger"
 )
 
 const (

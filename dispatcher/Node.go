@@ -32,9 +32,9 @@ import (
 	"math"
 	"net"
 
+	"github.com/openthread/ot-ns/simplelogger"
 	"github.com/openthread/ot-ns/threadconst"
 	. "github.com/openthread/ot-ns/types"
-	"github.com/simonlingoogle/go-simplelogger"
 )
 
 const (

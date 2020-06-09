@@ -27,9 +27,9 @@
 package visualize_grpc
 
 import (
+	"github.com/openthread/ot-ns/simplelogger"
 	. "github.com/openthread/ot-ns/types"
 	"github.com/openthread/ot-ns/visualize"
-	"github.com/simonlingoogle/go-simplelogger"
 )
 
 type grpcField struct {

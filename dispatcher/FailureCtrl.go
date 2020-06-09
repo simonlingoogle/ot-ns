@@ -29,7 +29,7 @@ package dispatcher
 import (
 	"math/rand"
 
-	"github.com/simonlingoogle/go-simplelogger"
+	"github.com/openthread/ot-ns/simplelogger"
 )
 
 type FailTime struct {

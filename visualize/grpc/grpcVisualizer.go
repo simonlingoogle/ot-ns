@@ -29,7 +29,7 @@ package visualize_grpc
 import (
 	"time"
 
-	"github.com/simonlingoogle/go-simplelogger"
+	"github.com/openthread/ot-ns/simplelogger"
 
 	pb "github.com/openthread/ot-ns/visualize/grpc/pb"
 

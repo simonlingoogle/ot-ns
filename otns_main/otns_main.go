@@ -54,8 +54,8 @@ import (
 
 	"github.com/openthread/ot-ns/cli"
 
+	"github.com/openthread/ot-ns/simplelogger"
 	"github.com/openthread/ot-ns/simulation"
-	"github.com/simonlingoogle/go-simplelogger"
 )
 
 type MainArgs struct {

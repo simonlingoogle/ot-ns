@@ -27,8 +27,8 @@
 package dispatcher
 
 import (
+	"github.com/openthread/ot-ns/simplelogger"
 	"github.com/openthread/ot-ns/threadconst"
-	"github.com/simonlingoogle/go-simplelogger"
 )
 
 type rloc16Map map[uint16][]*Node

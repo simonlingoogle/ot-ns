@@ -35,7 +35,7 @@ import (
 	"github.com/openthread/ot-ns/types"
 	. "github.com/openthread/ot-ns/types"
 
-	"github.com/simonlingoogle/go-simplelogger"
+	"github.com/openthread/ot-ns/simplelogger"
 
 	pb "github.com/openthread/ot-ns/visualize/grpc/pb"
 
