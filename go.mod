@@ -34,13 +34,9 @@ require (
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1 // indirect
 	github.com/golang/protobuf v1.3.5
-	github.com/jteeuwen/go-bindata v3.0.7+incompatible // indirect
 	github.com/pkg/errors v0.8.1
-	github.com/simonlingoogle/go-simplelogger v0.0.0-20191122025812-962af3877d65
 	github.com/stretchr/testify v1.4.0
-	go.uber.org/atomic v1.5.1 // indirect
-	go.uber.org/multierr v1.4.0 // indirect
-	go.uber.org/zap v1.13.0 // indirect
+	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
 	golang.org/x/text v0.3.2 // indirect
