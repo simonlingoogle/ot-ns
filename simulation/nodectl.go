@@ -26,25 +26,38 @@
 
 package simulation
 
-import "time"
+import "github.com/simonlingoogle/go-simplelogger"
 
-type NodeCtl interface {
-	Id() int
+type Node struct {
+	NodeCtl
+	cfg *NodeConfig
+}
 
-	SetMode(mode string)
-	SetPanid(panid uint16)
-	SetChannel(ch int)
-	SetMasterKey(key string)
-	RouterEligibleDisable()
-	SetRouterSelectionJitter(timeout int)
-	AssurePrompt()
+func (node *Node) setupMode() {
+	if node.cfg.IsRouter {
+		// routers should be full functional and rx always on
+		simplelogger.AssertFalse(node.cfg.IsMtd)
+		simplelogger.AssertFalse(node.cfg.RxOffWhenIdle)
+	}
 
-	GetIpAddrLinkLocal() []string
-	GetIpAddrMleid() []string
-	GetIpAddrRloc() []string
-	Ping(addr string, payloadSize int, count int, interval int, hopLimit int)
+	// only MED can use RxOffWhenIdle
+	simplelogger.AssertTrue(!node.cfg.RxOffWhenIdle || node.cfg.IsMtd)
 
-	Command(cmd string, timeout time.Duration) []string
-	CommandExpectNone(cmd string, timeout time.Duration)
-	Exit() error
+	mode := ""
+	if !node.cfg.RxOffWhenIdle {
+		mode += "r"
+	}
+	mode += "s"
+	if !node.cfg.IsMtd {
+		mode += "d"
+	}
+	mode += "n"
+
+	node.SetMode(mode)
+
+	if !node.cfg.IsRouter {
+		node.RouterEligibleDisable()
+	} else {
+		node.SetRouterSelectionJitter(1)
+	}
 }

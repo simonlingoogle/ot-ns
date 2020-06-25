@@ -28,8 +28,11 @@ package simulation
 
 import (
 	"os"
+	"path/filepath"
 	"sort"
 	"time"
+
+	"github.com/openthread/ot-ns/simulation/otcli"
 
 	"github.com/openthread/ot-ns/progctx"
 
@@ -79,13 +82,16 @@ func (s *Simulation) AddNode(cfg *NodeConfig) (*Node, error) {
 	}
 
 	simplelogger.AssertNil(s.nodes[nodeid])
-	node, err := newNode(s, nodeid, cfg)
+	node, err := otcli.NewNode(filepath.Join(s.BinDir(), "ot-cli-ftd"), nodeid)
 	if err != nil {
 		simplelogger.Errorf("simulation add node failed: %v", err)
 		return nil, err
 	}
-
-	s.nodes[nodeid] = node
+	nodectl := &Node{
+		NodeCtl: node,
+		cfg:     cfg,
+	}
+	s.nodes[nodeid] = nodectl
 
 	simplelogger.Infof("simulation:CtrlAddNode: %+v, rawMode=%v", cfg, s.rawMode)
 	s.d.AddNode(nodeid, cfg.X, cfg.Y, cfg.RadioRange, NodeMode{
@@ -95,14 +101,20 @@ func (s *Simulation) AddNode(cfg *NodeConfig) (*Node, error) {
 		FullNetworkData:    true,
 	})
 
-	node.setupMode()
+	nodectl.setupMode()
 
 	if !s.rawMode {
-		node.SetupNetworkParameters(s)
+		s.setupNetworkParameters(nodectl)
 		node.Start()
 	}
 
-	return node, nil
+	return nodectl, nil
+}
+
+func (s *Simulation) setupNetworkParameters(node *Node) {
+	node.SetMasterKey(s.MasterKey())
+	node.SetPanid(s.Panid())
+	node.SetChannel(s.Channel())
 }
 
 func (s *Simulation) genNodeId() NodeId {

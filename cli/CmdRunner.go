@@ -33,6 +33,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/openthread/ot-ns/simulation/otcli"
+
 	"github.com/openthread/ot-ns/web"
 
 	"github.com/openthread/ot-ns/progctx"
@@ -233,7 +235,7 @@ func (rt *CmdRunner) executeAddNode(cc *CommandContext, cmd *AddCmd) {
 			return
 		}
 
-		cc.outputf("%d\n", node.Id)
+		cc.outputf("%d\n", node.Id())
 	})
 }
 
@@ -246,7 +248,7 @@ func (rt *CmdRunner) executeDelNode(cc *CommandContext, cmd *DelCmd) {
 				continue
 			}
 
-			cc.error(sim.DeleteNode(node.Id))
+			cc.error(sim.DeleteNode(node.Id()))
 		}
 	})
 }
@@ -380,12 +382,12 @@ func (rt *CmdRunner) executeNode(cc *CommandContext, cmd *NodeCmd) {
 		}()
 
 		if cmd.Command != nil {
-			output := node.Command(*cmd.Command, simulation.DefaultCommandTimeout)
+			output := node.Command(*cmd.Command, otcli.DefaultCommandTimeout)
 			for _, line := range output {
 				cc.outputf("%s\n", line)
 			}
 		} else {
-			contextNodeId = node.Id
+			contextNodeId = node.Id()
 		}
 	})
 
@@ -421,9 +423,9 @@ func (rt *CmdRunner) executeRadio(cc *CommandContext, radio *RadioCmd) {
 			}
 
 			if radio.On != nil {
-				sim.SetNodeFailed(node.Id, false)
+				sim.SetNodeFailed(node.Id(), false)
 			} else if radio.Off != nil {
-				sim.SetNodeFailed(node.Id, true)
+				sim.SetNodeFailed(node.Id(), true)
 			} else if radio.FailTime != nil {
 				if radio.FailTime.FailInterval > 0 && radio.FailTime.FailDuration > 0 {
 					dnode.SetFailTime(dispatcher.FailTime{
@@ -564,7 +566,7 @@ func (rt *CmdRunner) executeScan(cc *CommandContext, cmd *ScanCmd) {
 			return
 		}
 
-		node.CommandExpectNone("scan", simulation.DefaultCommandTimeout)
+		node.CommandExpectNone("scan", otcli.DefaultCommandTimeout)
 	})
 
 	timeout := time.Millisecond * 600 // FIXME: hardcoding
