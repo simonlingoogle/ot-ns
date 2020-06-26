@@ -359,7 +359,7 @@ func (d *Dispatcher) processNextEvent() bool {
 	}
 
 	// nextEventTime <= d.pauseTime
-	// convert nextEventTime to real time
+	// convert nextEventTime to otreal time
 	if d.speed < MaxSimulateSpeed {
 		var sleepUntilTime = nextEventTime
 		if sleepUntilTime > d.pauseTime {
@@ -999,7 +999,7 @@ func (d *Dispatcher) convertNodeMilliTime(node *Node, milliTime uint32) uint64 {
 	ts := node.CreateTime + uint64(milliTime)*1000 // convert to us
 
 	// because timestamp on node is uint32_t, so it can not exceed 1293 hours, after that the timestamp rewinds from zero
-	// so we should calculate the real timestamp.
+	// so we should calculate the otreal timestamp.
 	// This assumes that the node is not far behind in time
 	for ts+(0xffffffff*1000) < d.CurTime {
 		ts += 0xffffffff * 1000
