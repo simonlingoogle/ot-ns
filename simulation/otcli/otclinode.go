@@ -159,7 +159,7 @@ func (node *OtCliNode) AssurePrompt() {
 	node.expectLine("", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) CommandExpectNone(cmd string, timeout time.Duration) {
+func (node *OtCliNode) CommandNoWait(cmd string, timeout time.Duration) {
 	_, _ = node.Input.Write([]byte(cmd + "\n"))
 	node.expectLine(cmd, timeout)
 }

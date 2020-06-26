@@ -45,6 +45,6 @@ type NodeCtl interface {
 	Ping(addr string, payloadSize int, count int, interval int, hopLimit int)
 
 	Command(cmd string, timeout time.Duration) []string
-	CommandExpectNone(cmd string, timeout time.Duration)
+	CommandNoWait(cmd string, timeout time.Duration)
 	Exit() error
 }

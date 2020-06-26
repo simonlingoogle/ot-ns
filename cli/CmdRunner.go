@@ -566,7 +566,7 @@ func (rt *CmdRunner) executeScan(cc *CommandContext, cmd *ScanCmd) {
 			return
 		}
 
-		node.CommandExpectNone("scan", otcli.DefaultCommandTimeout)
+		node.CommandNoWait("scan", otcli.DefaultCommandTimeout)
 	})
 
 	timeout := time.Millisecond * 600 // FIXME: hardcoding
