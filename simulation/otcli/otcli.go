@@ -44,11 +44,6 @@ import (
 	"time"
 )
 
-type OtCliRW interface {
-	WriteLine(line string)
-	ReadLine() (line string, err error)
-}
-
 const (
 	DefaultCommandTimeout = time.Second * 10
 )
@@ -105,8 +100,7 @@ func New(exePath string, id NodeId) (*OtCli, error) {
 }
 
 type OtCli struct {
-	id int
-
+	id        int
 	cmd       *exec.Cmd
 	Input     io.WriteCloser
 	Output    io.Reader
