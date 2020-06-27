@@ -26,10 +26,13 @@
 
 package simulation
 
-import "github.com/simonlingoogle/go-simplelogger"
+import (
+	"github.com/openthread/ot-ns/simulation/otcli"
+	"github.com/simonlingoogle/go-simplelogger"
+)
 
 type Node struct {
-	NodeCtl
+	*otcli.OtCli
 	cfg *NodeConfig
 }
 

@@ -30,6 +30,9 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/openthread/ot-ns/otoutfilter"
+	. "github.com/openthread/ot-ns/types"
+	"github.com/simonlingoogle/go-simplelogger"
 	"io"
 	"io/ioutil"
 	"os"
@@ -39,11 +42,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/openthread/ot-ns/otoutfilter"
-	. "github.com/openthread/ot-ns/types"
-	"github.com/simonlingoogle/go-simplelogger"
 )
+
+type OtCliRW interface {
+	WriteLine(line string)
+	ReadLine() (line string, err error)
+}
 
 const (
 	DefaultCommandTimeout = time.Second * 10
@@ -53,7 +57,7 @@ var (
 	DoneOrErrorRegexp = regexp.MustCompile(`(Done|Error \d+: .*)`)
 )
 
-func NewNode(exePath string, id NodeId) (*OtCliNode, error) {
+func New(exePath string, id NodeId) (*OtCli, error) {
 	flashFile := fmt.Sprintf("tmp/0_%d.flash", id)
 	if err := os.RemoveAll(flashFile); err != nil {
 		simplelogger.Errorf("Remove flash file %s failed: %+v", flashFile, err)
@@ -85,7 +89,7 @@ func NewNode(exePath string, id NodeId) (*OtCliNode, error) {
 		return nil, err
 	}
 
-	n := &OtCliNode{
+	n := &OtCli{
 		id:           id,
 		cmd:          cmd,
 		Input:        pipeIn,
@@ -100,7 +104,7 @@ func NewNode(exePath string, id NodeId) (*OtCliNode, error) {
 	return n, nil
 }
 
-type OtCliNode struct {
+type OtCli struct {
 	id int
 
 	cmd       *exec.Cmd
@@ -111,15 +115,15 @@ type OtCliNode struct {
 	pendingLines chan string
 }
 
-func (node *OtCliNode) String() string {
-	return fmt.Sprintf("OtCliNode<%d>", node.id)
+func (node *OtCli) String() string {
+	return fmt.Sprintf("OtCli<%d>", node.id)
 }
 
-func (node *OtCliNode) Id() int {
+func (node *OtCli) Id() int {
 	return node.id
 }
 
-func (node *OtCliNode) Start() {
+func (node *OtCli) Start() {
 	node.IfconfigUp()
 	node.ThreadStart()
 
@@ -128,13 +132,13 @@ func (node *OtCliNode) Start() {
 		node.GetMasterKey(), node.GetMode())
 }
 
-func (node *OtCliNode) Stop() {
+func (node *OtCli) Stop() {
 	node.ThreadStop()
 	node.IfconfigDown()
 	simplelogger.Debugf("%v - stopped, state = %s", node, node.GetState())
 }
 
-func (node *OtCliNode) Exit() error {
+func (node *OtCli) Exit() error {
 	_, _ = node.Input.Write([]byte("exit\n"))
 	node.expectEOF(DefaultCommandTimeout)
 	err := node.cmd.Wait()
@@ -144,7 +148,7 @@ func (node *OtCliNode) Exit() error {
 	return err
 }
 
-func (node *OtCliNode) AssurePrompt() {
+func (node *OtCli) AssurePrompt() {
 	_, _ = node.Input.Write([]byte("\n"))
 	if found, _ := node.TryExpectLine("", time.Second); found {
 		return
@@ -159,12 +163,12 @@ func (node *OtCliNode) AssurePrompt() {
 	node.expectLine("", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) CommandNoWait(cmd string, timeout time.Duration) {
+func (node *OtCli) CommandNoWait(cmd string, timeout time.Duration) {
 	_, _ = node.Input.Write([]byte(cmd + "\n"))
 	node.expectLine(cmd, timeout)
 }
 
-func (node *OtCliNode) Command(cmd string, timeout time.Duration) []string {
+func (node *OtCli) Command(cmd string, timeout time.Duration) []string {
 	_, _ = node.Input.Write([]byte(cmd + "\n"))
 	node.expectLine(cmd, timeout)
 	output := node.expectLine(DoneOrErrorRegexp, timeout)
@@ -177,7 +181,7 @@ func (node *OtCliNode) Command(cmd string, timeout time.Duration) []string {
 	return output
 }
 
-func (node *OtCliNode) CommandExpectString(cmd string, timeout time.Duration) string {
+func (node *OtCli) CommandExpectString(cmd string, timeout time.Duration) string {
 	output := node.Command(cmd, timeout)
 	if len(output) != 1 {
 		simplelogger.Panicf("expected 1 line, but received %d: %#v", len(output), output)
@@ -186,7 +190,7 @@ func (node *OtCliNode) CommandExpectString(cmd string, timeout time.Duration) st
 	return output[0]
 }
 
-func (node *OtCliNode) CommandExpectInt(cmd string, timeout time.Duration) int {
+func (node *OtCli) CommandExpectInt(cmd string, timeout time.Duration) int {
 	s := node.CommandExpectString(cmd, DefaultCommandTimeout)
 	var iv int64
 	var err error
@@ -203,7 +207,7 @@ func (node *OtCliNode) CommandExpectInt(cmd string, timeout time.Duration) int {
 	return int(iv)
 }
 
-func (node *OtCliNode) CommandExpectHex(cmd string, timeout time.Duration) int {
+func (node *OtCli) CommandExpectHex(cmd string, timeout time.Duration) int {
 	s := node.CommandExpectString(cmd, DefaultCommandTimeout)
 	var iv int64
 	var err error
@@ -216,16 +220,16 @@ func (node *OtCliNode) CommandExpectHex(cmd string, timeout time.Duration) int {
 	return int(iv)
 }
 
-func (node *OtCliNode) SetChannel(ch int) {
+func (node *OtCli) SetChannel(ch int) {
 	simplelogger.AssertTrue(11 <= ch && ch <= 26)
 	node.Command(fmt.Sprintf("channel %d", ch), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetChannel() int {
+func (node *OtCli) GetChannel() int {
 	return node.CommandExpectInt("channel", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetChildList() (childlist []int) {
+func (node *OtCli) GetChildList() (childlist []int) {
 	s := node.CommandExpectString("child list", DefaultCommandTimeout)
 	ss := strings.Split(s, " ")
 
@@ -239,159 +243,159 @@ func (node *OtCliNode) GetChildList() (childlist []int) {
 	return
 }
 
-func (node *OtCliNode) GetChildTable() {
+func (node *OtCli) GetChildTable() {
 	// todo: not implemented yet
 }
 
-func (node *OtCliNode) GetChildTimeout() int {
+func (node *OtCli) GetChildTimeout() int {
 	return node.CommandExpectInt("childtimeout", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetChildTimeout(timeout int) {
+func (node *OtCli) SetChildTimeout(timeout int) {
 	node.Command(fmt.Sprintf("childtimeout %d", timeout), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetContextReuseDelay() int {
+func (node *OtCli) GetContextReuseDelay() int {
 	return node.CommandExpectInt("contextreusedelay", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetContextReuseDelay(delay int) {
+func (node *OtCli) SetContextReuseDelay(delay int) {
 	node.Command(fmt.Sprintf("contextreusedelay %d", delay), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetNetworkName() string {
+func (node *OtCli) GetNetworkName() string {
 	return node.CommandExpectString("networkname", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetNetworkName(name string) {
+func (node *OtCli) SetNetworkName(name string) {
 	node.Command(fmt.Sprintf("networkname %s", name), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetEui64() string {
+func (node *OtCli) GetEui64() string {
 	return node.CommandExpectString("eui64", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetEui64(eui64 string) {
+func (node *OtCli) SetEui64(eui64 string) {
 	node.Command(fmt.Sprintf("eui64 %s", eui64), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetExtAddr() uint64 {
+func (node *OtCli) GetExtAddr() uint64 {
 	s := node.CommandExpectString("extaddr", DefaultCommandTimeout)
 	v, err := strconv.ParseUint(s, 16, 64)
 	simplelogger.PanicIfError(err)
 	return v
 }
 
-func (node *OtCliNode) SetExtAddr(extaddr uint64) {
+func (node *OtCli) SetExtAddr(extaddr uint64) {
 	node.Command(fmt.Sprintf("extaddr %016x", extaddr), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetExtPanid() string {
+func (node *OtCli) GetExtPanid() string {
 	return node.CommandExpectString("extpanid", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetExtPanid(extpanid string) {
+func (node *OtCli) SetExtPanid(extpanid string) {
 	node.Command(fmt.Sprintf("extpanid %s", extpanid), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetIfconfig() string {
+func (node *OtCli) GetIfconfig() string {
 	return node.CommandExpectString("ifconfig", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) IfconfigUp() {
+func (node *OtCli) IfconfigUp() {
 	node.Command("ifconfig up", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) IfconfigDown() {
+func (node *OtCli) IfconfigDown() {
 	node.Command("ifconfig down", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetIpAddr() []string {
+func (node *OtCli) GetIpAddr() []string {
 	// todo: parse IPv6 addresses
 	addrs := node.Command("ipaddr", DefaultCommandTimeout)
 	return addrs
 }
 
-func (node *OtCliNode) GetIpAddrLinkLocal() []string {
+func (node *OtCli) GetIpAddrLinkLocal() []string {
 	// todo: parse IPv6 addresses
 	addrs := node.Command("ipaddr linklocal", DefaultCommandTimeout)
 	return addrs
 }
 
-func (node *OtCliNode) GetIpAddrMleid() []string {
+func (node *OtCli) GetIpAddrMleid() []string {
 	// todo: parse IPv6 addresses
 	addrs := node.Command("ipaddr mleid", DefaultCommandTimeout)
 	return addrs
 }
 
-func (node *OtCliNode) GetIpAddrRloc() []string {
+func (node *OtCli) GetIpAddrRloc() []string {
 	addrs := node.Command("ipaddr rloc", DefaultCommandTimeout)
 	return addrs
 }
 
-func (node *OtCliNode) GetIpMaddr() []string {
+func (node *OtCli) GetIpMaddr() []string {
 	// todo: parse IPv6 addresses
 	addrs := node.Command("ipmaddr", DefaultCommandTimeout)
 	return addrs
 }
 
-func (node *OtCliNode) GetIpMaddrPromiscuous() bool {
+func (node *OtCli) GetIpMaddrPromiscuous() bool {
 	return node.CommandExpectEnabledOrDisabled("ipmaddr promiscuous", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) IpMaddrPromiscuousEnable() {
+func (node *OtCli) IpMaddrPromiscuousEnable() {
 	node.Command("ipmaddr promiscuous enable", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) IpMaddrPromiscuousDisable() {
+func (node *OtCli) IpMaddrPromiscuousDisable() {
 	node.Command("ipmaddr promiscuous disable", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetPromiscuous() bool {
+func (node *OtCli) GetPromiscuous() bool {
 	return node.CommandExpectEnabledOrDisabled("promiscuous", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) PromiscuousEnable() {
+func (node *OtCli) PromiscuousEnable() {
 	node.Command("promiscuous enable", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) PromiscuousDisable() {
+func (node *OtCli) PromiscuousDisable() {
 	node.Command("promiscuous disable", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetRouterEligible() bool {
+func (node *OtCli) GetRouterEligible() bool {
 	return node.CommandExpectEnabledOrDisabled("routereligible", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) RouterEligibleEnable() {
+func (node *OtCli) RouterEligibleEnable() {
 	node.Command("routereligible enable", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) RouterEligibleDisable() {
+func (node *OtCli) RouterEligibleDisable() {
 	node.Command("routereligible disable", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetJoinerPort() int {
+func (node *OtCli) GetJoinerPort() int {
 	return node.CommandExpectInt("joinerport", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetJoinerPort(port int) {
+func (node *OtCli) SetJoinerPort(port int) {
 	node.Command(fmt.Sprintf("joinerport %d", port), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetKeySequenceCounter() int {
+func (node *OtCli) GetKeySequenceCounter() int {
 	return node.CommandExpectInt("keysequence counter", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetKeySequenceCounter(counter int) {
+func (node *OtCli) SetKeySequenceCounter(counter int) {
 	node.Command(fmt.Sprintf("keysequence counter %d", counter), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetKeySequenceGuardTime() int {
+func (node *OtCli) GetKeySequenceGuardTime() int {
 	return node.CommandExpectInt("keysequence guardtime", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetKeySequenceGuardTime(guardtime int) {
+func (node *OtCli) SetKeySequenceGuardTime(guardtime int) {
 	node.Command(fmt.Sprintf("keysequence guardtime %d", guardtime), DefaultCommandTimeout)
 }
 
@@ -403,7 +407,7 @@ type LeaderData struct {
 	LeaderRouterID    int
 }
 
-func (node *OtCliNode) GetLeaderData() (leaderData LeaderData) {
+func (node *OtCli) GetLeaderData() (leaderData LeaderData) {
 	var err error
 	output := node.Command("leaderdata", DefaultCommandTimeout)
 	for _, line := range output {
@@ -435,106 +439,106 @@ func (node *OtCliNode) GetLeaderData() (leaderData LeaderData) {
 	return
 }
 
-func (node *OtCliNode) GetLeaderPartitionId() int {
+func (node *OtCli) GetLeaderPartitionId() int {
 	return node.CommandExpectInt("leaderpartitionid", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetLeaderPartitionId(partitionid int) {
+func (node *OtCli) SetLeaderPartitionId(partitionid int) {
 	node.Command(fmt.Sprintf("leaderpartitionid 0x%x", partitionid), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetLeaderWeight() int {
+func (node *OtCli) GetLeaderWeight() int {
 	return node.CommandExpectInt("leaderweight", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetLeaderWeight(weight int) {
+func (node *OtCli) SetLeaderWeight(weight int) {
 	node.Command(fmt.Sprintf("leaderweight 0x%x", weight), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) FactoryReset() {
+func (node *OtCli) FactoryReset() {
 	simplelogger.Warnf("%v - factoryreset", node)
 	_, _ = node.Input.Write([]byte("factoryreset\n"))
 	node.AssurePrompt()
 	simplelogger.Debugf("%v - ready", node)
 }
 
-func (node *OtCliNode) Reset() {
+func (node *OtCli) Reset() {
 	simplelogger.Warnf("%v - reset", node)
 	_, _ = node.Input.Write([]byte("reset\n"))
 	node.AssurePrompt()
 	simplelogger.Debugf("%v - ready", node)
 }
 
-func (node *OtCliNode) GetMasterKey() string {
+func (node *OtCli) GetMasterKey() string {
 	return node.CommandExpectString("masterkey", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetMasterKey(key string) {
+func (node *OtCli) SetMasterKey(key string) {
 	node.Command(fmt.Sprintf("masterkey %s", key), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetMode() string {
+func (node *OtCli) GetMode() string {
 	// todo: return Mode type rather than just string
 	return node.CommandExpectString("mode", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetMode(mode string) {
+func (node *OtCli) SetMode(mode string) {
 	node.Command(fmt.Sprintf("mode %s", mode), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetPanid() uint16 {
+func (node *OtCli) GetPanid() uint16 {
 	// todo: return Mode type rather than just string
 	return uint16(node.CommandExpectInt("panid", DefaultCommandTimeout))
 }
 
-func (node *OtCliNode) SetPanid(panid uint16) {
+func (node *OtCli) SetPanid(panid uint16) {
 	node.Command(fmt.Sprintf("panid 0x%x", panid), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetRloc16() uint16 {
+func (node *OtCli) GetRloc16() uint16 {
 	return uint16(node.CommandExpectHex("rloc16", DefaultCommandTimeout))
 }
 
-func (node *OtCliNode) GetRouterSelectionJitter() int {
+func (node *OtCli) GetRouterSelectionJitter() int {
 	return node.CommandExpectInt("routerselectionjitter", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetRouterSelectionJitter(timeout int) {
+func (node *OtCli) SetRouterSelectionJitter(timeout int) {
 	node.Command(fmt.Sprintf("routerselectionjitter %d", timeout), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetRouterUpgradeThreshold() int {
+func (node *OtCli) GetRouterUpgradeThreshold() int {
 	return node.CommandExpectInt("routerupgradethreshold", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetRouterUpgradeThreshold(timeout int) {
+func (node *OtCli) SetRouterUpgradeThreshold(timeout int) {
 	node.Command(fmt.Sprintf("routerupgradethreshold %d", timeout), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetRouterDowngradeThreshold() int {
+func (node *OtCli) GetRouterDowngradeThreshold() int {
 	return node.CommandExpectInt("routerdowngradethreshold", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) SetRouterDowngradeThreshold(timeout int) {
+func (node *OtCli) SetRouterDowngradeThreshold(timeout int) {
 	node.Command(fmt.Sprintf("routerdowngradethreshold %d", timeout), DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetState() string {
+func (node *OtCli) GetState() string {
 	return node.CommandExpectString("state", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) ThreadStart() {
+func (node *OtCli) ThreadStart() {
 	node.Command("thread start", DefaultCommandTimeout)
 }
-func (node *OtCliNode) ThreadStop() {
+func (node *OtCli) ThreadStop() {
 	node.Command("thread stop", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetVersion() string {
+func (node *OtCli) GetVersion() string {
 	return node.CommandExpectString("version", DefaultCommandTimeout)
 }
 
-func (node *OtCliNode) GetSingleton() bool {
+func (node *OtCli) GetSingleton() bool {
 	s := node.CommandExpectString("singleton", DefaultCommandTimeout)
 	if s == "true" {
 		return true
@@ -546,7 +550,7 @@ func (node *OtCliNode) GetSingleton() bool {
 	}
 }
 
-func (node *OtCliNode) lineReader() {
+func (node *OtCli) lineReader() {
 	// close the line channel after line reader routine exit
 	defer close(node.pendingLines)
 
@@ -578,7 +582,7 @@ func (node *OtCliNode) lineReader() {
 	}
 }
 
-func (node *OtCliNode) TryExpectLine(line interface{}, timeout time.Duration) (bool, []string) {
+func (node *OtCli) TryExpectLine(line interface{}, timeout time.Duration) (bool, []string) {
 	var outputLines []string
 
 	deadline := time.After(timeout)
@@ -611,7 +615,7 @@ func (node *OtCliNode) TryExpectLine(line interface{}, timeout time.Duration) (b
 	}
 }
 
-func (node *OtCliNode) expectLine(line interface{}, timeout time.Duration) []string {
+func (node *OtCli) expectLine(line interface{}, timeout time.Duration) []string {
 	found, output := node.TryExpectLine(line, timeout)
 	if !found {
 		simplelogger.Panicf("expect line timeout: %#v", line)
@@ -620,7 +624,7 @@ func (node *OtCliNode) expectLine(line interface{}, timeout time.Duration) []str
 	return output
 }
 
-func (node *OtCliNode) expectEOF(timeout time.Duration) {
+func (node *OtCli) expectEOF(timeout time.Duration) {
 	deadline := time.After(timeout)
 
 	for {
@@ -638,7 +642,7 @@ func (node *OtCliNode) expectEOF(timeout time.Duration) {
 	}
 }
 
-func (node *OtCliNode) CommandExpectEnabledOrDisabled(cmd string, timeout time.Duration) bool {
+func (node *OtCli) CommandExpectEnabledOrDisabled(cmd string, timeout time.Duration) bool {
 	output := node.CommandExpectString(cmd, timeout)
 	if output == "Enabled" {
 		return true
@@ -650,14 +654,14 @@ func (node *OtCliNode) CommandExpectEnabledOrDisabled(cmd string, timeout time.D
 	return false
 }
 
-func (node *OtCliNode) Ping(addr string, payloadSize int, count int, interval int, hopLimit int) {
+func (node *OtCli) Ping(addr string, payloadSize int, count int, interval int, hopLimit int) {
 	cmd := fmt.Sprintf("ping %s %d %d %d %d", addr, payloadSize, count, interval, hopLimit)
 	_, _ = node.Input.Write([]byte(cmd + "\n"))
 	node.expectLine(cmd, DefaultCommandTimeout)
 	node.AssurePrompt()
 }
 
-func (node *OtCliNode) isLineMatch(line string, _expectedLine interface{}) bool {
+func (node *OtCli) isLineMatch(line string, _expectedLine interface{}) bool {
 	switch expectedLine := _expectedLine.(type) {
 	case string:
 		return line == expectedLine
@@ -675,6 +679,6 @@ func (node *OtCliNode) isLineMatch(line string, _expectedLine interface{}) bool 
 	return false
 }
 
-func (node *OtCliNode) DumpStat() string {
+func (node *OtCli) DumpStat() string {
 	return fmt.Sprintf("extaddr %016x, addr %04x, state %-6s", node.GetExtAddr(), node.GetRloc16(), node.GetState())
 }

@@ -29,11 +29,10 @@ package cli
 import (
 	"context"
 	"fmt"
+	"github.com/openthread/ot-ns/simulation/otcli"
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/openthread/ot-ns/simulation/otcli"
 
 	"github.com/openthread/ot-ns/web"
 
