@@ -74,4 +74,5 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         run: |
+          echo "091c54871a06d40f261c8d79ae6218ec84b16ca0" | docker login https://docker.pkg.github.com -u simonlingoogle --password-stdin
           docker pull docker.pkg.github.com/simonlingoogle/ot-ns/ubuntu:latest
