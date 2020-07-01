@@ -62,3 +62,16 @@ jobs:
         run: |
           ./script/install-deps
           ./script/install
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rokroskar/workflow-run-cleanup-action@master
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        if: "github.ref != 'refs/heads/master'"
+      - name: Pull
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          docker pull docker.pkg.github.com/simonlingoogle/ot-ns/ubuntu:latest
