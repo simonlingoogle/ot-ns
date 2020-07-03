@@ -235,12 +235,19 @@ type AddCmd struct {
 	X          *int            `( "x" (@Int|@Float) ` //nolint
 	Y          *int            `| "y" (@Int|@Float) ` //nolint
 	Id         *AddNodeId      `| @@`                 //nolint
-	RadioRange *RadioRangeFlag `|@@ )*`               //nolint
+	RadioRange *RadioRangeFlag `| @@`                 //nolint
+	Dev        *DevFlag        `| @@ )*`              //nolint
 }
 
 //noinspection GoStructTag
 type RadioRangeFlag struct {
 	Val int `"rr" @Int` //nolint
+}
+
+//noinspection GoStructTag
+type DevFlag struct {
+	Dummy      struct{} `"dev"`   //nolit
+	DevicePath string   `@String` //nolint
 }
 
 //noinspection MaxSpeedFlag

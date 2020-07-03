@@ -64,7 +64,15 @@ func newNode(s *Simulation, id NodeId, cfg *NodeConfig) (*Node, error) {
 		return nil, err
 	}
 	simplelogger.Debugf("node exe path: %s", exePath)
-	cmd := exec.CommandContext(context.Background(), exePath, strconv.Itoa(id))
+
+	exeArgs := []string{}
+	if cfg.DevicePath != "" {
+		exeArgs = append(exeArgs, "-dev", cfg.DevicePath)
+	}
+	exeArgs = append(exeArgs, strconv.Itoa(id))
+
+	simplelogger.Debugf("%s %v", exePath, exeArgs)
+	cmd := exec.CommandContext(context.Background(), exePath, exeArgs...)
 	pipeIn, err := cmd.StdinPipe()
 	if err != nil {
 		return nil, err

@@ -1,10 +1,11 @@
 package runcli
 
 import (
-	"github.com/chzyer/readline"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/chzyer/readline"
 )
 
 type CliHandler interface {

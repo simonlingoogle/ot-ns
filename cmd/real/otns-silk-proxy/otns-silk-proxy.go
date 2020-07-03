@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/openthread/ot-ns/cli/runcli"
-	"github.com/simonlingoogle/go-simplelogger"
 	"io"
 	"os"
+
+	"github.com/openthread/ot-ns/cli/runcli"
+	"github.com/simonlingoogle/go-simplelogger"
 )
 
 type cliHandler struct{}

@@ -286,6 +286,10 @@ func (rt *CmdRunner) executeAddNode(cc *CommandContext, cmd *AddCmd) {
 		cfg.RadioRange = cmd.RadioRange.Val
 	}
 
+	if cmd.Dev != nil {
+		cfg.DevicePath = cmd.Dev.DevicePath
+	}
+
 	rt.postAsyncWait(func(sim *simulation.Simulation) {
 		node, err := sim.AddNode(cfg)
 		if err != nil {

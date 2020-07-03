@@ -37,6 +37,7 @@ type NodeConfig struct {
 	IsRouter      bool
 	RxOffWhenIdle bool
 	RadioRange    int
+	DevicePath    string
 }
 
 func DefaultNodeConfig() *NodeConfig {
