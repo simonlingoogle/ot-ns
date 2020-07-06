@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"github.com/openthread/ot-ns/cli/runcli"
-	"github.com/simonlingoogle/go-simplelogger"
 	"io"
 	"os"
 	"strconv"
+
+	"github.com/openthread/ot-ns/cli/runcli"
+	"github.com/openthread/ot-ns/progctx"
+	. "github.com/openthread/ot-ns/types"
+	"github.com/simonlingoogle/go-simplelogger"
+	"github.com/tarm/serial"
 )
 
 type cliHandler struct{}
@@ -29,6 +34,7 @@ func (c cliHandler) HandleCommand(cmd string, output io.Writer) error {
 
 var options struct {
 	DevicePath string
+	NodeId     NodeId
 }
 
 func parseArgs() {
@@ -50,7 +56,7 @@ func parseArgs() {
 		goto failed
 	}
 
-	_, err = strconv.Atoi(args[0])
+	options.NodeId, err = strconv.Atoi(args[0])
 	if err != nil {
 		simplelogger.Errorf("must specify one node ID")
 		goto failed
@@ -64,19 +70,40 @@ failed:
 }
 
 func main() {
-	args := parseArgs()
-	simplelogger.Infof("options %v, args %v", options, args)
-	go readCli()
+	parseArgs()
+	simplelogger.Infof("options %+v", options)
 
-	err := runcli.RunCli(&cliHandler{}, runcli.CliOptions{
-		EchoInput: true,
-	})
+	ctx := progctx.New(context.Background())
 
-	if err != nil {
-		simplelogger.Error(err)
-	}
+	ctx.WaitAdd("readCli", 1)
+	go readCli(ctx, options.DevicePath)
+
+	ctx.WaitAdd("RunCli", 1)
+	go func() {
+		defer ctx.WaitDone("RunCli")
+		runcli.RunCli(ctx, &cliHandler{}, runcli.CliOptions{
+			EchoInput: true,
+		})
+	}()
+
+	ctx.Wait()
 }
 
-func readCli() {
+func readCli(ctx *progctx.ProgCtx, devicePath string) {
+	var err error
 
+	defer ctx.WaitDone("readCli")
+
+	defer func() {
+		if err != nil {
+			simplelogger.Errorf("%s", err)
+		}
+		ctx.Cancel(err)
+	}()
+
+	cfg := serial.Config{
+		Name: devicePath,
+		Baud: 115200,
+	}
+	_, err = serial.OpenPort(&cfg)
 }

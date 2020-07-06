@@ -41,6 +41,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/simonlingoogle/go-simplelogger v0.0.0-20191122025812-962af3877d65
 	github.com/stretchr/testify v1.6.1
+	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	go.uber.org/zap v1.15.0 // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/mod v0.3.0 // indirect

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/openthread/ot-ns/progctx"
 )
 
 type CliHandler interface {
@@ -17,7 +18,7 @@ type CliOptions struct {
 	EchoInput bool
 }
 
-func RunCli(handler CliHandler, options CliOptions) error {
+func RunCli(ctx *progctx.ProgCtx, handler CliHandler, options CliOptions) error {
 	stdinFd := int(os.Stdin.Fd())
 	stdinIsTerminal := readline.IsTerminal(stdinFd)
 	if stdinIsTerminal {
@@ -65,6 +66,11 @@ func RunCli(handler CliHandler, options CliOptions) error {
 	defer func() {
 		_ = l.Close()
 	}()
+
+	ctx.Defer(func() {
+		l.Config.Stdin.Close()
+		l.Close()
+	})
 
 	for {
 		// update the prompt

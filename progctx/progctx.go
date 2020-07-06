@@ -30,8 +30,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/pkg/errors"
-
 	"github.com/simonlingoogle/go-simplelogger"
 )
 
@@ -108,7 +106,7 @@ func (ctx *ProgCtx) Wait() {
 
 func (ctx *ProgCtx) Defer(f func()) {
 	if ctx.Err() != nil {
-		panic(errors.Errorf("Can not `Defer` after context is done"))
+		f()
 	}
 
 	ctx.deferred = append(ctx.deferred, f)
