@@ -69,7 +69,7 @@ func (sc *simulationController) CtrlMoveNodeTo(nodeid NodeId, x, y int) error {
 	return nil
 }
 
-func (sc *simulationController) CtrlAddNode(x, y int, isRouter bool, mode NodeMode, nodeid NodeId) error {
+func (sc *simulationController) CtrlAddNode(x, y int, isRouter bool, nodeid NodeId) error {
 	sim := sc.sim
 	nodeCfg := DefaultNodeConfig()
 	nodeCfg.IsRouter = isRouter

@@ -55,6 +55,7 @@ message VisualizeEvent {
         SetSpeedEvent set_speed = 18;
         HeartbeatEvent heartbeat = 19;
         OnExtAddrChangeEvent on_ext_addr_change = 20;
+        SetNodeModeEvent set_node_mode = 22;
     }
 }
 
@@ -159,7 +160,6 @@ message AddNodeEvent {
     int32 x = 2;
     int32 y = 3;
     int32 radio_range = 4;
-    NodeMode node_mode = 5;
 }
 
 message NodeMode {
@@ -167,6 +167,11 @@ message NodeMode {
     bool secure_data_requests = 2;
     bool full_thread_device = 3;
     bool full_network_data = 4;
+}
+
+message SetNodeModeEvent {
+    int32 node_id = 1;
+    NodeMode node_mode = 2;
 }
 
 message SetNodeRloc16Event {
@@ -193,7 +198,6 @@ message AddNodeRequest {
     int32 x = 1;
     int32 y = 2;
     bool is_router = 3;
-    NodeMode mode = 4;
     uint32 node_id = 5;
 }
 

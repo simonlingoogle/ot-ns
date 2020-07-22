@@ -696,13 +696,13 @@ func (d *Dispatcher) sendOneMessage(sit *sendItem, srcnode *Node, dstnode *Node)
 	}
 }
 
-func (d *Dispatcher) newNode(nodeid NodeId, x, y int, radioRange int, mode NodeMode) (node *Node) {
+func (d *Dispatcher) newNode(nodeid NodeId, x, y int, radioRange int) (node *Node) {
 	node = newNode(d, nodeid, x, y, radioRange)
 	d.nodes[nodeid] = node
 	d.alarmMgr.AddNode(nodeid)
 	d.setAlive(nodeid)
 
-	d.vis.AddNode(nodeid, x, y, radioRange, mode)
+	d.vis.AddNode(nodeid, x, y, radioRange, node.Mode)
 	return
 }
 
@@ -851,16 +851,18 @@ func (d *Dispatcher) handleStatusPush(srcid NodeId, data string) {
 			extaddr, err := strconv.ParseUint(sp[1], 16, 64)
 			simplelogger.PanicIfError(err)
 			srcnode.onStatusPushExtAddr(extaddr)
+		} else if sp[0] == "mode" {
+			srcnode.onStatusPushMode(sp[1])
 		} else {
 			simplelogger.Warnf("unknown status push: %s=%s", sp[0], sp[1])
 		}
 	}
 }
 
-func (d *Dispatcher) AddNode(nodeid NodeId, x, y int, radioRange int, mode NodeMode) {
+func (d *Dispatcher) AddNode(nodeid NodeId, x, y int, radioRange int) {
 	simplelogger.AssertNil(d.nodes[nodeid])
 	simplelogger.Infof("dispatcher add node %d", nodeid)
-	node := d.newNode(nodeid, x, y, radioRange, mode)
+	node := d.newNode(nodeid, x, y, radioRange)
 
 	if !d.cfg.Real {
 		// Wait until node's extended address is emitted (but not for real devices)

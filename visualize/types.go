@@ -59,6 +59,7 @@ type Visualizer interface {
 	CountDown(duration time.Duration, text string)
 	SetParent(id NodeId, extaddr uint64)
 	OnExtAddrChange(id NodeId, extaddr uint64)
+	SetNodeMode(mode NodeMode)
 }
 
 type MsgVisualizeInfo struct {

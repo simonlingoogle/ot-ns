@@ -32,7 +32,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/openthread/ot-ns/types"
 	. "github.com/openthread/ot-ns/types"
 
 	"github.com/simonlingoogle/go-simplelogger"
@@ -94,12 +93,7 @@ exit:
 }
 
 func (gs *grpcServer) CtrlAddNode(ctx context.Context, req *pb.AddNodeRequest) (*pb.Empty, error) {
-	err := gs.vis.simctrl.CtrlAddNode(int(req.X), int(req.Y), req.IsRouter, types.NodeMode{
-		RxOnWhenIdle:       req.Mode.RxOnWhenIdle,
-		SecureDataRequests: req.Mode.SecureDataRequests,
-		FullThreadDevice:   req.Mode.FullThreadDevice,
-		FullNetworkData:    req.Mode.FullNetworkData,
-	}, NodeId(req.NodeId))
+	err := gs.vis.simctrl.CtrlAddNode(int(req.X), int(req.Y), req.IsRouter, NodeId(req.NodeId))
 	return &pb.Empty{}, err
 }
 

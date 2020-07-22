@@ -73,6 +73,7 @@ type Node struct {
 	Rloc16      uint16
 	CreateTime  uint64
 	CurTime     uint64
+	Mode        NodeMode
 
 	peerAddr      *net.UDPAddr
 	failureCtrl   *FailureCtrl
@@ -89,14 +90,20 @@ func newNode(d *Dispatcher, nodeid NodeId, x, y int, radioRange int) *Node {
 	simplelogger.AssertTrue(radioRange >= 0)
 
 	nc := &Node{
-		D:           d,
-		Id:          nodeid,
-		CurTime:     d.CurTime,
-		CreateTime:  d.CurTime,
-		X:           x,
-		Y:           y,
-		ExtAddr:     InvalidExtAddr,
-		Rloc16:      threadconst.InvalidRloc16,
+		D:          d,
+		Id:         nodeid,
+		CurTime:    d.CurTime,
+		CreateTime: d.CurTime,
+		X:          x,
+		Y:          y,
+		ExtAddr:    InvalidExtAddr,
+		Rloc16:     threadconst.InvalidRloc16,
+		Mode: NodeMode{
+			RxOnWhenIdle:       true,
+			SecureDataRequests: true,
+			FullThreadDevice:   true,
+			FullNetworkData:    true,
+		},
 		peerAddr:    nil, // peer address will be set when the first event is received
 		radioRange:  radioRange,
 		joinerState: OtJoinerStateIdle,
@@ -235,6 +242,28 @@ func (node *Node) onStatusPushExtAddr(extaddr uint64) {
 
 	node.ExtAddr = extaddr
 	node.D.onStatusPushExtAddr(node, oldExtAddr)
+}
+
+func (node *Node) onStatusPushMode(modeStr string) {
+	mode := NodeMode{}
+
+	for _, c := range modeStr {
+		switch c {
+		case 'r':
+			mode.RxOnWhenIdle = true
+		case 's':
+			mode.SecureDataRequests = true
+		case 'd':
+			mode.FullThreadDevice = true
+		case 'n':
+			mode.FullNetworkData = true
+		default:
+			simplelogger.Panicf("invalid node mode: %s", modeStr)
+		}
+	}
+
+	node.Mode = mode
+	node.D.vis.SetNodeMode(mode)
 }
 
 func (node *Node) onJoinerState(state OtJoinerState) {

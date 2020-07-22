@@ -70,6 +70,9 @@ func (nv nopVisualizer) SetNodePos(nodeid NodeId, x, y int) {
 func (nv nopVisualizer) SetController(ctrl SimulationController) {
 }
 
+func (nv nopVisualizer) SetNodeMode(mode NodeMode) {
+}
+
 func (nv nopVisualizer) Run() {
 	for {
 		time.Sleep(time.Hour)

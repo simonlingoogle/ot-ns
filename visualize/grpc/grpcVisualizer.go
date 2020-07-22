@@ -225,6 +225,10 @@ func (gv *grpcVisualizer) SetParent(id NodeId, extaddr uint64) {
 	}}}, false)
 }
 
+func (gv *grpcVisualizer) SetNodeMode(mode NodeMode) {
+	panic("implement me")
+}
+
 func (gv *grpcVisualizer) prepareStream(stream *grpcStream) error {
 	// show demo legend if necessary
 	if gv.showDemoLegendEvent != nil {

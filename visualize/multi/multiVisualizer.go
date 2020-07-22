@@ -171,6 +171,12 @@ func (mv *multiVisualizer) SetParent(id NodeId, extaddr uint64) {
 	}
 }
 
+func (mv *multiVisualizer) SetNodeMode(mode NodeMode) {
+	for _, v := range mv.vs {
+		v.SetNodeMode(mode)
+	}
+}
+
 func NewMultiVisualizer(vs ...visualize.Visualizer) visualize.Visualizer {
 	return &multiVisualizer{vs: vs}
 }
