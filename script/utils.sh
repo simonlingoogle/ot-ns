@@ -102,7 +102,7 @@ install_package()
 function install_pretty_tools()
 {
     if ! installed golangci-lint; then
-      install_package curl --apt curl --brew curl
+        install_package curl --apt curl --brew curl
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)"/bin v1.23.6
     fi
 
