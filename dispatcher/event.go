@@ -47,5 +47,5 @@ type event struct {
 	NodeId  NodeId
 	DataLen uint16
 	Data    []byte
-	SrcAddr *net.UDPAddr
+	SrcAddr *net.UnixAddr
 }

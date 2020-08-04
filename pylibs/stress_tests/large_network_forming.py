@@ -51,6 +51,7 @@ class StressTest(BaseStressTest):
 
     def run(self):
         self.ns.packet_loss_ratio = PACKET_LOSS_RATIO
+        self.ns.config_visualization(broadcast_message=False)
 
         durations = []
         partition_counts = []

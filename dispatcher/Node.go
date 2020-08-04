@@ -74,7 +74,8 @@ type Node struct {
 	CreateTime  uint64
 	CurTime     uint64
 
-	peerAddr      *net.UDPAddr
+	peerConn      *net.UnixConn
+	peerAddr      *net.UnixAddr
 	failureCtrl   *FailureCtrl
 	isFailed      bool
 	radioRange    int
@@ -124,7 +125,7 @@ func (node *Node) Send(elapsed uint64, data []byte) {
 
 func (node *Node) SendMessage(msg []byte) {
 	if node.peerAddr != nil {
-		_, _ = node.D.udpln.WriteToUDP(msg, node.peerAddr)
+		_, _ = node.peerConn.Write(msg)
 	} else {
 		simplelogger.Errorf("%s does not have a peer address", node)
 	}

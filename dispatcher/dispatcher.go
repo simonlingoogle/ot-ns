@@ -97,7 +97,7 @@ type Dispatcher struct {
 	ctx                   *progctx.ProgCtx
 	cfg                   Config
 	cbHandler             CallbackHandler
-	udpln                 *net.UDPConn
+	udpln                 *net.UnixConn
 	eventChan             chan *event
 	waitGroup             sync.WaitGroup
 	CurTime               uint64
@@ -140,13 +140,11 @@ type Dispatcher struct {
 func NewDispatcher(ctx *progctx.ProgCtx, cfg *Config, cbHandler CallbackHandler) *Dispatcher {
 	simplelogger.AssertTrue(!cfg.Real || cfg.Speed == 1)
 
-	udpAddr, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))
+	udpAddr, err := net.ResolveUnixAddr("unixgram", fmt.Sprintf("%d", cfg.Port))
 	simplelogger.FatalIfError(err, err)
-	ln, err := net.ListenUDP("udp", udpAddr)
+	ln, err := net.ListenUnixgram("unixgram", udpAddr)
 	simplelogger.FatalIfError(err, err)
-	_ = ln.SetWriteBuffer(25 * 1024 * 1024)
-	_ = ln.SetReadBuffer(25 * 1024 * 1024)
-	simplelogger.Infof("dispatcher listening on %s ...", udpAddr)
+	simplelogger.Infof("dispatcher listening on %#v ...", udpAddr)
 
 	simplelogger.AssertNil(err)
 
@@ -472,7 +470,7 @@ func (d *Dispatcher) eventsReader() {
 
 	for {
 		// wait until all nodes are sleepd
-		n, srcaddr, err := udpln.ReadFromUDP(readbuf)
+		n, srcaddr, err := udpln.ReadFromUnix(readbuf)
 		if err != nil {
 			if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
 				time.Sleep(time.Millisecond * 100)
@@ -490,7 +488,7 @@ func (d *Dispatcher) eventsReader() {
 		delay := binary.LittleEndian.Uint64(readbuf[:8])
 		typ := readbuf[8]
 		datalen := binary.LittleEndian.Uint16(readbuf[9:11])
-		nodeid := srcaddr.Port - d.cfg.Port
+		nodeid := 1
 
 		data := make([]byte, n-11)
 		copy(data, readbuf[11:n])
