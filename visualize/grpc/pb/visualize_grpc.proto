@@ -211,10 +211,20 @@ message ReplayEntry {
     VisualizeEvent event = 2;
 }
 
+message EventRequest {
+    int32 node_id = 1;
+
+}
+
+message EventResponse {
+
+}
+
 service VisualizeGrpcService {
     //    rpc Echo (EchoRequest) returns (EchoResponse);
     rpc Visualize (VisualizeRequest) returns (stream VisualizeEvent);
     rpc Command (CommandRequest) returns (CommandResponse);
+    rpc Event (EventRequest) returns (EventResponse)
 }
 
 message Empty {
