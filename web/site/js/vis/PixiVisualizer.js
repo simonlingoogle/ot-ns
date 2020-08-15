@@ -86,16 +86,19 @@ export default class PixiVisualizer extends VObject {
         this._unicastMessagesStage = new PIXI.Container();
         this.addChild(this._unicastMessagesStage);
 
+        this._uiStage = new PIXI.Container();
+        this.addChild(this._uiStage);
+
         this.statusMsg = new PIXI.Text("", {
             fontFamily: "Verdana",
             fontSize: 13,
             fontWeight: "bolder"
         });
         this.statusMsg.position.set(0, -this.statusMsg.height);
-        this.addChild(this.statusMsg);
+        this._uiStage.addChild(this.statusMsg);
 
         this.actionBar = new ActionBar();
-        this.addChild(this.actionBar);
+        this._uiStage.addChild(this.actionBar);
         this.actionBar.position.set(10, 1000);
         this.actionBar.setDraggable();
         this.updateStatusMsg();
@@ -516,6 +519,7 @@ export default class PixiVisualizer extends VObject {
         }
 
         this.actionBar.setContext(new_sel || "any")
+        this.updateNodeInfoPanel()
     }
 
     setSpeed(speed) {
@@ -531,6 +535,36 @@ export default class PixiVisualizer extends VObject {
         let sel = this.nodes[this._selectedNodeId];
         if (sel) {
             this.ctrlDeleteNode(sel.id)
+        }
+        this.updateNodeInfoPanel()
+    }
+
+    updateNodeInfoPanel() {
+        let sel = this.nodes[this._selectedNodeId];
+        if (sel) {
+            this._showNodeInfoPanel(sel)
+        } else {
+            this._hideNodeInfoPanel()
+        }
+    }
+
+    _showNodeInfoPanel(sel) {
+        if (!this._nodeInfoPanel) {
+            this._nodeInfoPanel = new PIXI.Graphics();
+            this._nodeInfoPanel.clear();
+            this._nodeInfoPanel.beginFill(0xFFFFFF);
+            this._nodeInfoPanel.lineStyle(2);
+            this._nodeInfoPanel.drawRoundedRect(0, 0, 100, 200, 7);
+            this._nodeInfoPanel.endFill();
+            this._uiStage.addChild(this._nodeInfoPanel)
+        }
+
+        this._nodeInfoPanel.visible = true;
+    }
+
+    _hideNodeInfoPanel() {
+        if (this._nodeInfoPanel) {
+            this._nodeInfoPanel.visible = false;
         }
     }
 

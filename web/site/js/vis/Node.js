@@ -289,6 +289,8 @@ export default class Node extends VObject {
             this.root.addChildAt(selbox, 0);
             this._selbox = selbox
         }
+
+        this._showNodeInfoPanel()
     }
 
     onUnselected() {
