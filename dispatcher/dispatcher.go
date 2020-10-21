@@ -126,10 +126,11 @@ type Dispatcher struct {
 
 	Counters struct {
 		// Event counters
-		AlarmEvents      uint64
-		RadioEvents      uint64
-		StatusPushEvents uint64
-		UartWriteEvents  uint64
+		AlarmEvents       uint64
+		RadioEvents       uint64
+		StatusPushEvents  uint64
+		UartWriteEvents   uint64
+		Ip6DatagramEvents uint64
 		// Packet dispatching counters
 		DispatchByExtAddrSucc   uint64
 		DispatchByExtAddrFail   uint64
@@ -335,13 +336,16 @@ func (d *Dispatcher) handleRecvEvent(evt *event) {
 	case eventTypeRadioReceived:
 		simplelogger.AssertTrue(evt.Delay == 1)
 		d.Counters.RadioEvents += 1
-		d.sendQueue.Add(evtTime, nodeid, evt.Data)
+		d.sendQueue.Add(evtTime, evt.Type, nodeid, evt.Data)
 	case eventTypeStatusPush:
 		d.Counters.StatusPushEvents += 1
 		d.handleStatusPush(evt.NodeId, string(evt.Data))
 	case eventTypeUartWrite:
 		d.Counters.UartWriteEvents += 1
 		d.handleUartWrite(evt.NodeId, evt.Data)
+	case eventTypeIp6Datagram:
+		d.Counters.Ip6DatagramEvents += 1
+		d.sendQueue.Add(evtTime, evt.Type, nodeid, evt.Data)
 	default:
 		simplelogger.Panicf("event type not implemented: %v", evt.Type)
 	}
@@ -463,13 +467,16 @@ func (d *Dispatcher) processNextEvent() bool {
 			simplelogger.AssertTrue(s.Timestamp == nextSendtime)
 			d.advanceTime(nextSendtime)
 			// construct the message
-			if !d.cfg.NoPcap {
-				d.pcapFrameChan <- pcapFrameItem{nextSendtime, s.Data[1:]}
+
+			switch s.EventType {
+			case eventTypeRadioReceived:
+				d.sendRadioEvent(s)
+			case eventTypeIp6Datagram:
+				d.sendIp6DatagramEvent(s)
+			default:
+				simplelogger.Panicf("unknown event from sendQueue: %#v", s)
 			}
-			if d.cfg.DumpPackets {
-				d.dumpPacket(s)
-			}
-			d.sendNodeMessage(s)
+
 		}
 
 		nextAlarmTime = d.alarmMgr.NextTimestamp()
@@ -477,6 +484,20 @@ func (d *Dispatcher) processNextEvent() bool {
 	}
 
 	return len(d.nodes) > 0
+}
+
+func (d *Dispatcher) sendRadioEvent(s *sendItem) {
+	if !d.cfg.NoPcap {
+		d.pcapFrameChan <- pcapFrameItem{d.CurTime, s.Data[1:]}
+	}
+	if d.cfg.DumpPackets {
+		d.dumpPacket(s)
+	}
+	d.sendNodeMessage(s)
+}
+
+func (d *Dispatcher) sendIp6DatagramEvent(s *sendItem) {
+
 }
 
 func (d *Dispatcher) eventsReader() {

@@ -34,38 +34,38 @@ import (
 
 func TestSendQueue_Add(t *testing.T) {
 	q := newSendQueue()
-	q.Add(2, 2, nil)
-	q.Add(1, 1, nil)
-	q.Add(3, 3, nil)
+	q.Add(2, 0, 2, nil)
+	q.Add(1, 0, 1, nil)
+	q.Add(3, 0, 3, nil)
 }
 
 func TestSendQueue_Len(t *testing.T) {
 	q := newSendQueue()
 	assert.Equal(t, 0, q.Len())
-	q.Add(2, 2, nil)
+	q.Add(2, 0, 2, nil)
 	assert.Equal(t, 1, q.Len())
-	q.Add(1, 1, nil)
+	q.Add(1, 0, 1, nil)
 	assert.Equal(t, 2, q.Len())
-	q.Add(3, 3, nil)
+	q.Add(3, 0, 3, nil)
 	assert.Equal(t, 3, q.Len())
 }
 
 func TestSendQueue_NextTimestamp(t *testing.T) {
 	q := newSendQueue()
 	assert.Equal(t, Ever, q.NextTimestamp())
-	q.Add(2, 2, nil)
+	q.Add(2, 0, 2, nil)
 	assert.Equal(t, uint64(2), q.NextTimestamp())
-	q.Add(1, 1, nil)
+	q.Add(1, 0, 1, nil)
 	assert.Equal(t, uint64(1), q.NextTimestamp())
-	q.Add(3, 3, nil)
+	q.Add(3, 0, 3, nil)
 	assert.Equal(t, uint64(1), q.NextTimestamp())
 }
 
 func TestSendQueue_PopNext(t *testing.T) {
 	q := newSendQueue()
-	q.Add(2, 2, nil)
-	q.Add(1, 1, nil)
-	q.Add(3, 3, nil)
+	q.Add(2, 0, 2, nil)
+	q.Add(1, 0, 1, nil)
+	q.Add(3, 0, 3, nil)
 
 	it := q.PopNext()
 	assert.True(t, it.NodeId == 1 && it.Timestamp == 1)

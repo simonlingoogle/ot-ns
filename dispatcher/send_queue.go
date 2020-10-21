@@ -34,6 +34,7 @@ import (
 
 type sendItem struct {
 	Timestamp uint64
+	EventType eventType
 	NodeId    NodeId
 	Data      []byte
 }
@@ -73,9 +74,10 @@ func (sq sendQueue) NextTimestamp() uint64 {
 	}
 }
 
-func (sq *sendQueue) Add(timestamp uint64, id NodeId, data []byte) {
+func (sq *sendQueue) Add(timestamp uint64, evtType eventType, id NodeId, data []byte) {
 	heap.Push(sq, &sendItem{
 		Timestamp: timestamp,
+		EventType: evtType,
 		NodeId:    id,
 		Data:      data,
 	})
